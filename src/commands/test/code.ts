@@ -22,13 +22,15 @@ async function sendCodeRequest(
       "https://codes.thisisnotawebsitedotcom.com/",
       form
     );
+    const contentType = response.headers["content-type"];
 
-    if (response.headers["content-type"] == "video/mp4") {
+    if (contentType != "text/html") {
       return new Promise(async (resolve, reject) => {
-        const fileName = `${code}.mp4`;
+        const type = response.headers["content-type"].split("/")[1];
+        const fileName = `${code}.${type}`;
 
         if (fs.existsSync(fileName)) {
-          return resolve({ type: "video/mp4", data: fileName });
+          return resolve({ type: contentType, data: fileName });
         }
 
         const videoResponse = await axios.post(
@@ -39,37 +41,12 @@ async function sendCodeRequest(
           }
         );
         const blob = new Blob([videoResponse.data], {
-          type: "video/mp4",
+          type: contentType,
         });
 
         fs.writeFile(fileName, Buffer.from(await blob.arrayBuffer()), reject);
 
-        resolve({ type: "video/mp4", data: fileName });
-      });
-    }
-
-    if (response.headers["content-type"] == "video/mp4") {
-      return new Promise(async (resolve, reject) => {
-        const fileName = `${code}.mp4`;
-
-        if (fs.existsSync(fileName)) {
-          return resolve({ type: "video/mp4", data: fileName });
-        }
-
-        const videoResponse = await axios.post(
-          "https://codes.thisisnotawebsitedotcom.com/",
-          form,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-        const blob = new Blob([videoResponse.data], {
-          type: "video/mp4",
-        });
-
-        fs.writeFile(fileName, Buffer.from(await blob.arrayBuffer()), reject);
-
-        resolve({ type: "video/mp4", data: fileName });
+        resolve({ type: contentType, data: fileName });
       });
     }
 
