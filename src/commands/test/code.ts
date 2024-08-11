@@ -61,21 +61,15 @@ async function sendCodeRequest(
 
   form.append("code", code);
 
+  const baseUrl = "https://codes.thisisnotawebsitedotcom.com/";
   try {
-    const response = await axios.post(
-      "https://codes.thisisnotawebsitedotcom.com/",
-      form
-    );
+    const response = await axios.post(baseUrl, form);
     const contentType = response.headers["content-type"];
 
     if (contentType != "text/html") {
-      const arrayBufferResponse = await axios.post(
-        "https://codes.thisisnotawebsitedotcom.com/",
-        form,
-        {
-          responseType: "arraybuffer",
-        }
-      );
+      const arrayBufferResponse = await axios.post(baseUrl, form, {
+        responseType: "arraybuffer",
+      });
       return saveFile(
         new Blob([arrayBufferResponse.data], {
           type: contentType,
