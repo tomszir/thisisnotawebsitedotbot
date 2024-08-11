@@ -1,0 +1,15 @@
+services:
+  bot:
+    container_name: bot
+    image: tomszir/thisisnotawebsitedotbot:latest
+    restart: always
+    env_file:
+      - .env
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower
+    environment:
+      - WATCHTOWER_CLEANUP=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 bot
