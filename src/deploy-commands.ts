@@ -11,11 +11,14 @@ const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
 
 (async () => {
+  console.log(commandFolders);
+  console.log(foldersPath);
+
   for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
     const commandFiles = fs
       .readdirSync(commandsPath)
-      .filter((file) => file.endsWith(".ts"));
+      .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
 
     for (const file of commandFiles) {
       const filePath = path.join(commandsPath, file);
