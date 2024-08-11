@@ -5,6 +5,8 @@ services:
     restart: always
     env_file:
       - .env
+    volumes:
+      - ./assets/:/app/assets/
   watchtower:
     container_name: watchtower
     image: containrrr/watchtower
