@@ -1,12 +1,11 @@
 import {
-  AttachmentBuilder,
   CacheType,
   ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
 
-import { ClientCommand } from "src/types";
+import { ClientCommand } from "../../types";
 import { JSDOM } from "jsdom";
 import axios from "axios";
 import fs from "node:fs";
@@ -23,6 +22,31 @@ async function sendCodeRequest(
       "https://codes.thisisnotawebsitedotcom.com/",
       form
     );
+
+    if (response.headers["content-type"] == "video/mp4") {
+      return new Promise(async (resolve, reject) => {
+        const fileName = `${code}.mp4`;
+
+        if (fs.existsSync(fileName)) {
+          return resolve({ type: "video/mp4", data: fileName });
+        }
+
+        const videoResponse = await axios.post(
+          "https://codes.thisisnotawebsitedotcom.com/",
+          form,
+          {
+            responseType: "arraybuffer",
+          }
+        );
+        const blob = new Blob([videoResponse.data], {
+          type: "video/mp4",
+        });
+
+        fs.writeFile(fileName, Buffer.from(await blob.arrayBuffer()), reject);
+
+        resolve({ type: "video/mp4", data: fileName });
+      });
+    }
 
     if (response.headers["content-type"] == "video/mp4") {
       return new Promise(async (resolve, reject) => {

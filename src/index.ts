@@ -17,7 +17,7 @@ const client = new Client({
 client.commands = new Collection();
 
 client.once(Events.ClientReady, (readyClient) => {
-  console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+  console.log(`Ready! test Logged in as ${readyClient.user.tag}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

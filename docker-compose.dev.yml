@@ -4,5 +4,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - DOCKER_ENVIRONMENT=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     env_file:
       - .env
+    ports:
+      - 9229:9229
