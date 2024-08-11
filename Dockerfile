@@ -12,7 +12,7 @@ RUN corepack enable
 
 # Copy the local package files to the container's workspace.
 COPY *.json *.yaml /app/
-COPY . /app/src
+COPY ./src /app/src
 WORKDIR /app
 
 # Production dependencies

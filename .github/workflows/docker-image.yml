@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
 jobs:
   build:
     name: Push Docker image to Docker Hub
@@ -35,5 +35,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          args: DOCKER_ENVIRONMENT=production
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
