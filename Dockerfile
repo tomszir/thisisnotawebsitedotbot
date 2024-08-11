@@ -11,8 +11,8 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 # Copy the local package files to the container's workspace.
-COPY package*.json pnpm*.yaml /app/
-COPY src /app/src
+COPY *.json *.yaml /app/
+COPY . /app/src
 WORKDIR /app
 
 # Production dependencies
