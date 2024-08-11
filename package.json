@@ -1,12 +1,14 @@
 {
   "name": "thisisnotawebsitedotbot",
   "version": "1.0.0",
-  "description": "",
+  "packageManager": "pnpm@9.6.0",
   "main": "src/index.ts",
   "scripts": {
     "dev": "ts-node ./src/index.ts",
     "dev-deploy": "ts-node ./src/deploy-commands.ts && ts-node ./src/index.ts",
-    "start": "pm2 start ./src/index.ts --name thisisnotawebsitedotbot"
+    "prod": "pnpm prod-deploy && node ./dist/index.js",
+    "prod-deploy": "node ./dist/deploy-commands.js",
+    "build": "tsc --build"
   },
   "keywords": [],
   "author": "",
@@ -16,8 +18,9 @@
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
     "jsdom": "^24.1.1",
-    "pm2": "^5.4.2",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7"
