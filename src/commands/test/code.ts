@@ -146,7 +146,7 @@ const command = {
     const files = await Promise.all(
       images.map(async (x, i) => {
         if (x.startsWith("data")) {
-          return await saveFile(base64ImageToBlob(x), "image/png", code, i);
+          return await saveFile(base64ImageToBlob(x), "image/png", code, i + 1);
         }
       })
     );
