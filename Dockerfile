@@ -1,5 +1,7 @@
 FROM node:20-alpine AS base
 
+ENV DOCKER_BUILDKIT=1
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
