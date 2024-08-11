@@ -11,9 +11,6 @@ const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
 
 (async () => {
-  console.log(commandFolders);
-  console.log(foldersPath);
-
   for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
     const commandFiles = fs
@@ -26,7 +23,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
       if ("data" in command && "execute" in command) {
         const clientCommand = command as ClientCommand;
-        console.log(`Reloading command: ${clientCommand.data.name}`);
+        console.log(`Loading command: ${clientCommand.data.name}`);
         commands.push(clientCommand.data.toJSON());
       } else {
         console.log(
