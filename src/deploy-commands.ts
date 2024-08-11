@@ -23,6 +23,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
       if ("data" in command && "execute" in command) {
         const clientCommand = command as ClientCommand;
+        console.log(`Reloading command: ${clientCommand.data.name}`);
         commands.push(clientCommand.data.toJSON());
       } else {
         console.log(
