@@ -10,6 +10,50 @@ import { JSDOM } from "jsdom";
 import axios from "axios";
 import fs from "node:fs";
 
+function base64ImageToBlob(str: string) {
+  // extract content type and base64 payload from original string
+  var pos = str.indexOf(";base64,");
+  var type = str.substring(5, pos);
+  var b64 = str.substr(pos + 8);
+
+  // decode base64
+  var imageContent = atob(b64);
+
+  // create an ArrayBuffer and a view (as unsigned 8-bit)
+  var buffer = new ArrayBuffer(imageContent.length);
+  var view = new Uint8Array(buffer);
+
+  // fill the view, using the decoded base64
+  for (var n = 0; n < imageContent.length; n++) {
+    view[n] = imageContent.charCodeAt(n);
+  }
+
+  // convert ArrayBuffer to Blob
+  var blob = new Blob([buffer], { type: type });
+
+  return blob;
+}
+
+function saveFile(
+  blob: Blob,
+  contentType: string,
+  code: string,
+  index: number = 0
+): Promise<{ type: string; data: string }> {
+  return new Promise(async (resolve, reject) => {
+    const type = contentType.split("/")[1];
+    const fileName = `assets/${code}-${index}.${type}`;
+
+    if (fs.existsSync(fileName)) {
+      return resolve({ type: contentType, data: fileName });
+    }
+
+    fs.writeFile(fileName, Buffer.from(await blob.arrayBuffer()), reject);
+
+    resolve({ type: contentType, data: fileName });
+  });
+}
+
 async function sendCodeRequest(
   code: string
 ): Promise<{ type: string; data: string } | null> {
@@ -25,29 +69,20 @@ async function sendCodeRequest(
     const contentType = response.headers["content-type"];
 
     if (contentType != "text/html") {
-      return new Promise(async (resolve, reject) => {
-        const type = response.headers["content-type"].split("/")[1];
-        const fileName = `${code}.${type}`;
-
-        if (fs.existsSync(fileName)) {
-          return resolve({ type: contentType, data: fileName });
+      const arrayBufferResponse = await axios.post(
+        "https://codes.thisisnotawebsitedotcom.com/",
+        form,
+        {
+          responseType: "arraybuffer",
         }
-
-        const videoResponse = await axios.post(
-          "https://codes.thisisnotawebsitedotcom.com/",
-          form,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-        const blob = new Blob([videoResponse.data], {
+      );
+      return saveFile(
+        new Blob([arrayBufferResponse.data], {
           type: contentType,
-        });
-
-        fs.writeFile(fileName, Buffer.from(await blob.arrayBuffer()), reject);
-
-        resolve({ type: contentType, data: fileName });
-      });
+        }),
+        contentType,
+        code
+      );
     }
 
     if (response.status != 200) {
@@ -89,7 +124,7 @@ const command = {
       return await interaction.editReply({ embeds: [embed] });
     }
 
-    if (response.type == "video/mp4") {
+    if (response.type != "text/html") {
       return await interaction.editReply({
         content: `**${code.toUpperCase()}**\n\n---`,
         files: [response.data],
@@ -103,7 +138,9 @@ const command = {
         attribute ? x.getAttribute(attribute)! : x.textContent!
       );
 
-    const images = [...new Set(getValueAttributes("img", "src"))];
+    const images = await Promise.all([
+      ...new Set(getValueAttributes("img", "src")),
+    ]);
     const paragraphs = getValueAttributes("p");
     const videos = [...new Set(getValueAttributes("source", "src"))];
 
@@ -112,17 +149,15 @@ const command = {
       ";"
     );
     const content: { name: string; value: string[]; byComma?: boolean }[] = [];
-
-    /*
-          ...videos,
-      ...images.map((x) => {
+    const files = await Promise.all(
+      images.map(async (x, i) => {
         if (x.startsWith("data")) {
-          return "Showing Data URL images not yet implemented";
+          return await saveFile(base64ImageToBlob(x), "image/png", code, i);
         }
+      })
+    );
 
-        return encodeURI(x);
-      }),
-    */
+    console.log(files);
 
     const handleLink = (link: string) => {
       var splitLink = link.split("/");
@@ -159,12 +194,14 @@ const command = {
     if (images.length > 0) {
       content.push({
         name: "Images",
-        value: images.map((x) => {
-          if (x.startsWith("data")) {
-            return "[TODO] Showing Data URL images not yet implemented";
-          }
-          return handleLink(x);
-        }),
+        value: images
+          .map((x) => {
+            if (x.startsWith("data")) {
+              return "";
+            }
+            return handleLink(x);
+          })
+          .filter((x) => x !== ""),
         byComma: true,
       });
     }
@@ -177,6 +214,7 @@ const command = {
             return `**${x.name}**\n${x.value.join(x.byComma ? ", " : "\n")}`;
           })
           .join("\n\n"),
+      files: files.map((x) => x?.data).filter((x) => x != null),
     });
   },
 } as ClientCommand;
