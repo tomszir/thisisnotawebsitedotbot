@@ -1,0 +1,25 @@
+{
+  "name": "thisisnotawebsitedotbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node ./src/index.ts",
+    "dev-deploy": "ts-node ./src/deploy-commands.ts && ts-node ./src/index.ts",
+    "start": "pm2 start ./src/index.ts --name thisisnotawebsitedotbot"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.3",
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
+    "jsdom": "^24.1.1",
+    "pm2": "^5.4.2",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7"
+  }
+}
