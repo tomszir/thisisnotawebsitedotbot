@@ -1,7 +1,7 @@
 services:
   bot:
     container_name: bot
-    image: tomszir/thisisnotawebsitedotbot:latest
+    image: tomszir/thisisnotawebsitedotbot:master
     restart: always
     env_file:
       - .env
