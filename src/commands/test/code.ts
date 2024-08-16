@@ -8,8 +8,8 @@ import {
 import { ClientCommand } from "../../types";
 import { JSDOM } from "jsdom";
 import axios from "axios";
+import crypto from "node:crypto";
 import fs from "node:fs";
-import { imageHash } from "image-hash";
 
 function base64ImageToBlob(str: string) {
   // extract content type and base64 payload from original string
@@ -39,15 +39,14 @@ function getFileName(
   buffer: Buffer,
   contentType: string,
   code: string
-): Promise<string> {
-  return new Promise((resolve, _) => {
-    const hash = btoa(`${contentType}+${buffer.toString("base64")}`).substring(
-      0,
-      16
-    );
+): string {
+  const hash = crypto
+    .createHash("md5")
+    .update(buffer)
+    .digest("base64")
+    .substring(0, 32);
 
-    resolve(`assets/${code}.${hash}.${contentType.split("/")[1]}`);
-  });
+  return `assets/${code}.${hash}.${contentType.split("/")[1]}`;
 }
 
 function saveFile(
@@ -57,7 +56,7 @@ function saveFile(
 ): Promise<{ type: string; data: string }> {
   return new Promise(async (resolve, reject) => {
     var buffer = Buffer.from(await blob.arrayBuffer());
-    const fileName = await getFileName(buffer, contentType, code);
+    const fileName = getFileName(buffer, contentType, code);
 
     if (fs.existsSync(fileName)) {
       return resolve({ type: contentType, data: fileName });
