@@ -41,9 +41,10 @@ function getFileName(
   code: string
 ): Promise<string> {
   return new Promise((resolve, _) => {
-    const hash = btoa(
-      `${contentType}+${buffer.toString("base64").substring(0, 32)}`
-    ).substring(0, 16);
+    const hash = btoa(`${contentType}+${buffer.toString("base64")}`).substring(
+      0,
+      16
+    );
 
     resolve(`assets/${code}.${hash}.${contentType.split("/")[1]}`);
   });
