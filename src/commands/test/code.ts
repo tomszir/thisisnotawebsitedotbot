@@ -40,22 +40,12 @@ function getFileName(
   contentType: string,
   code: string
 ): Promise<string> {
-  return new Promise((resolve, reject) => {
-    imageHash(
-      {
-        ext: contentType,
-        data: buffer,
-      },
-      16,
-      true,
-      (error: any, hash: string) => {
-        if (error) {
-          return reject(error);
-        }
+  return new Promise((resolve, _) => {
+    const hash = btoa(
+      `${contentType}+${buffer.toString("base64").substring(0, 32)}`
+    ).substring(0, 16);
 
-        resolve(`assets/${code}.${hash}.${contentType.split("/")[1]}`);
-      }
-    );
+    resolve(`assets/${code}.${hash}.${contentType.split("/")[1]}`);
   });
 }
 
