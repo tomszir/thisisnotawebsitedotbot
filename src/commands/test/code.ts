@@ -9,12 +9,13 @@ import { ClientCommand } from "../../types";
 import { JSDOM } from "jsdom";
 import axios from "axios";
 import fs from "node:fs";
+import { imageHash } from "image-hash";
 
 function base64ImageToBlob(str: string) {
   // extract content type and base64 payload from original string
   var pos = str.indexOf(";base64,");
   var type = str.substring(5, pos);
-  var b64 = str.substr(pos + 8);
+  var b64 = str.substring(pos + 8);
 
   // decode base64
   var imageContent = atob(b64);
@@ -34,21 +35,44 @@ function base64ImageToBlob(str: string) {
   return blob;
 }
 
+function getFileName(
+  buffer: Buffer,
+  contentType: string,
+  code: string
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    imageHash(
+      {
+        ext: contentType,
+        data: buffer,
+      },
+      16,
+      true,
+      (error: any, hash: string) => {
+        if (error) {
+          return reject(error);
+        }
+
+        resolve(`assets/${code}.${hash}.${contentType.split("/")[1]}`);
+      }
+    );
+  });
+}
+
 function saveFile(
   blob: Blob,
   contentType: string,
-  code: string,
-  index: number = 0
+  code: string
 ): Promise<{ type: string; data: string }> {
   return new Promise(async (resolve, reject) => {
-    const type = contentType.split("/")[1];
-    const fileName = `assets/${code}-${index}.${type}`;
+    var buffer = Buffer.from(await blob.arrayBuffer());
+    const fileName = await getFileName(buffer, contentType, code);
 
     if (fs.existsSync(fileName)) {
       return resolve({ type: contentType, data: fileName });
     }
 
-    fs.writeFile(fileName, Buffer.from(await blob.arrayBuffer()), reject);
+    fs.writeFile(fileName, buffer, reject);
 
     resolve({ type: contentType, data: fileName });
   });
@@ -62,6 +86,7 @@ async function sendCodeRequest(
   form.append("code", code);
 
   const baseUrl = "https://codes.thisisnotawebsitedotcom.com/";
+
   try {
     const response = await axios.post(baseUrl, form);
     const contentType = response.headers["content-type"];
@@ -144,14 +169,12 @@ const command = {
     );
     const content: { name: string; value: string[]; byComma?: boolean }[] = [];
     const files = await Promise.all(
-      images.map(async (x, i) => {
+      images.map(async (x) => {
         if (x.startsWith("data")) {
-          return await saveFile(base64ImageToBlob(x), "image/png", code, i + 1);
+          return await saveFile(base64ImageToBlob(x), "image/png", code);
         }
       })
     );
-
-    console.log(files);
 
     const handleLink = (link: string) => {
       var splitLink = link.split("/");
